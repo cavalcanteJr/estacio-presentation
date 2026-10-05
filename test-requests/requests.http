@@ -1,0 +1,176 @@
+### ==============================================================================
+### LAB DE SEGURANÇA EM REST APIS: JWT, BOLA E BFLA
+### Use com a extensão "REST Client" no VS Code ou nativo no IntelliJ IDEA
+### ==============================================================================
+
+@baseUrl = http://localhost:3000
+
+### ------------------------------------------------------------------------------
+### 0. RESET DO BANCO DE DADOS (Use sempre que quiser reiniciar a demo)
+### ------------------------------------------------------------------------------
+POST {{baseUrl}}/api/reset
+Content-Type: application/json
+
+### ------------------------------------------------------------------------------
+### 1. AUTENTICAÇÃO - LOGIN DOS PERSONAGENS
+### ------------------------------------------------------------------------------
+
+### 1.1 Login Alice (Compradora Comum - Role: CUSTOMER)
+# @name loginAlice
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "alice",
+  "password": "123",
+  "version": "v1"
+}
+
+### Salva o token da Alice
+@tokenAlice = {{loginAlice.response.body.token}}
+
+
+### 1.2 Login João (Vendedor 1 - Dono do MacBook #1 - Role: SELLER)
+# @name loginJoao
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "joao",
+  "password": "123",
+  "version": "v1"
+}
+
+### Salva o token do João
+@tokenJoao = {{loginJoao.response.body.token}}
+
+
+### 1.3 Login Maria (Vendedora Concorrente - Dona do S24 #2 - Role: SELLER)
+# @name loginMaria
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "maria",
+  "password": "123",
+  "version": "v1"
+}
+
+### Salva o token da Maria
+@tokenMaria = {{loginMaria.response.body.token}}
+
+
+### 1.4 Login Admin (Administrador da Plataforma - Role: ADMIN)
+# @name loginAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123",
+  "version": "v1"
+}
+
+### Salva o token do Admin
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+
+### ==============================================================================
+### 🚨 DEMONSTRAÇÃO 1: BFLA (Broken Function Level Authorization)
+### Um usuário comum executa ações de privilégio elevado
+### ==============================================================================
+
+### [ATAQUE V1] Alice (Cliente Comum) acessa relatório financeiro restrito de ADMIN!
+### Status esperado: 200 OK (Falha! Alice nunca deveria ver dados da empresa)
+GET {{baseUrl}}/api/v1/admin/financials
+Authorization: Bearer {{tokenAlice}}
+
+### [ATAQUE V1] Alice (Cliente Comum) cadastra um produto no catálogo da loja!
+### Status esperado: 201 Created (Falha! Apenas vendedores deveriam criar produtos)
+POST {{baseUrl}}/api/v1/products
+Authorization: Bearer {{tokenAlice}}
+Content-Type: application/json
+
+{
+  "name": "PlayStation 5 Pro Hackeado",
+  "description": "Cadastrado por uma cliente comum explorando falha BFLA",
+  "price": 3500.00
+}
+
+### [DEFESA V2] Alice tenta acessar o relatório na rota protegida
+### Status esperado: 403 Forbidden (Prevenido com middleware de Roles/RBAC!)
+GET {{baseUrl}}/api/v2/admin/financials
+Authorization: Bearer {{tokenAlice}}
+
+### [DEFESA V2] Alice tenta cadastrar produto na rota protegida
+### Status esperado: 403 Forbidden (Prevenido! Role CUSTOMER bloqueada)
+POST {{baseUrl}}/api/v2/products
+Authorization: Bearer {{tokenAlice}}
+Content-Type: application/json
+
+{
+  "name": "Tentativa Bloqueada",
+  "description": "Não será criado",
+  "price": 100.00
+}
+
+
+### ==============================================================================
+### 🚨 DEMONSTRAÇÃO 2: BOLA / IDOR (Broken Object Level Authorization)
+### Vendedora concorrente altera o preço do produto do rival!
+### ==============================================================================
+
+### Ver lista inicial de produtos (Repare no Produto 1: MacBook Pro R$ 14.999 do João)
+GET {{baseUrl}}/api/v1/products
+
+### [ATAQUE V1] Maria (Loja 2) altera o preço do MacBook Pro do João (Loja 1) para R$ 1,00!
+### Status esperado: 200 OK (Desastre! O endpoint não checa se Maria é a dona do produto)
+PUT {{baseUrl}}/api/v1/products/1/price
+Authorization: Bearer {{tokenMaria}}
+Content-Type: application/json
+
+{
+  "newPrice": 1.00
+}
+
+### Conferir se o preço foi realmente adulterado para R$ 1,00
+GET {{baseUrl}}/api/v1/products
+
+### [DEFESA V2] Maria tenta o mesmo golpe na rota protegida /api/v2/products/1/price
+### Status esperado: 403 Forbidden (Defesa ativada: Ownership Check impediu a alteração!)
+PUT {{baseUrl}}/api/v2/products/1/price
+Authorization: Bearer {{tokenMaria}}
+Content-Type: application/json
+
+{
+  "newPrice": 0.50
+}
+
+### [LEGÍTIMO V2] João (dono do produto) alterando o preço do seu próprio produto
+### Status esperado: 200 OK (Permitido pois João é o sellerId do produto #1)
+PUT {{baseUrl}}/api/v2/products/1/price
+Authorization: Bearer {{tokenJoao}}
+Content-Type: application/json
+
+{
+  "newPrice": 13999.00
+}
+
+
+### ==============================================================================
+### 🚨 DEMONSTRAÇÃO 3: FALHAS EM JWT (Assinatura Fraca & Forjamento de Privilégios)
+### ==============================================================================
+
+### DICA DIDÁTICA PARA A PALESTRA:
+### O token v1 foi gerado com segredo "secret123".
+### Se você colar o token da Alice no site https://jwt.io,
+### mudar no payload "role": "CUSTOMER" para "role": "ADMIN",
+### e colocar "secret123" no campo 'VERIFY SIGNATURE',
+### você forja uma assinatura válida e pode virar ADMIN!
+
+### Exemplo de Token Forjado com role ADMIN assinado com "secret123" (válido por 10 anos):
+@tokenForjadoAdmin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5LCJ1c2VybmFtZSI6ImFsaWNlX2hhY2tlciIsIm5hbWUiOiJBbGljZSBGb3JqYWRhIEFkbWluIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjIwMTk2MDMyMDB9.l8uY2X_4pYx625Tff0-0c4Jt7B0K7L883m6iW22f28w
+
+### Teste do Token Forjado em endpoint que aceita v1
+GET {{baseUrl}}/api/v1/admin/financials
+Authorization: Bearer {{tokenForjadoAdmin}}

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Segurança em REST APIs: JWT e Permissões Multiusuário</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(22, 30, 49, 0.75);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.3);
+      --danger: #f43f5e;
+      --danger-glow: rgba(244, 63, 94, 0.3);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(244, 63, 94, 0.08) 0%, transparent 40%);
+    }
+
+    /* Top Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: 'Fira Code', monospace;
+    }
+
+    .timer-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.95rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+    }
+
+    .timer-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    /* Slides Container */
+    .slider {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 40px 60px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.96) translateY(20px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 1300px;
+      margin: 0 auto;
+      right: 0;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+    }
+
+    /* Slide Elements */
+    .slide-tag {
+      font-family: 'Fira Code', monospace;
+      color: var(--accent);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+    }
+
+    p.subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 800px;
+      margin-bottom: 32px;
+    }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 12px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      position: relative;
+    }
+
+    .card.danger {
+      border-color: rgba(244, 63, 94, 0.4);
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.08) 0%, rgba(22, 30, 49, 0.7) 100%);
+    }
+
+    .card.success {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(22, 30, 49, 0.7) 100%);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Code Blocks */
+    pre {
+      background: #06090e;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 16px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .code-comment { color: #64748b; }
+    .code-vuln { color: #f43f5e; font-weight: 600; }
+    .code-safe { color: #10b981; font-weight: 600; }
+    .code-keyword { color: #38bdf8; }
+
+    /* JWT Visualizer Box */
+    .jwt-box {
+      font-family: 'Fira Code', monospace;
+      font-size: 1.1rem;
+      background: #06090e;
+      border: 1px solid #1e293b;
+      padding: 18px;
+      border-radius: 12px;
+      word-break: break-all;
+      margin: 16px 0;
+      line-height: 1.6;
+    }
+    .jwt-header { color: #f43f5e; }
+    .jwt-payload { color: #ec4899; }
+    .jwt-signature { color: #38bdf8; }
+
+    /* Footer Controls */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 32px;
+      border-top: 1px solid var(--card-border);
+      background: rgba(11, 15, 25, 0.85);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--accent);
+      color: #0b0f19;
+    }
+
+    .key-hint {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #1e293b;
+      border-radius: 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      margin-left: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header>
+    <div class="brand">
+      <span>🛡️ Palestra de Segurança em TI</span>
+      <span class="badge">OWASP API TOP 10</span>
+    </div>
+
+    <div class="timer-container">
+      <span id="timerDisplay">⏱️ 20:00</span>
+      <button class="timer-btn" id="startTimerBtn" onclick="toggleTimer()">▶ Iniciar</button>
+      <button class="timer-btn" onclick="resetTimer()">↺</button>
+    </div>
+
+    <div style="font-size: 0.9rem; color: var(--text-muted);">
+      Slide <span id="currentSlideNum">1</span> de <span id="totalSlidesNum">7</span>
+    </div>
+  </header>
+
+  <!-- Slider Area -->
+  <div class="slider">
+
+    <!-- SLIDE 1: Capa -->
+    <div class="slide active">
+      <div class="slide-tag">// PALESTRA TÉCNICA (20 MIN)</div>
+      <h1>Teste de Segurança em REST APIs</h1>
+      <p class="subtitle">
+        Vulnerabilidades em JWT, Quebra de Permissões Multi-usuário (BOLA & BFLA) e Demonstração Prática ao Vivo em um E-commerce.
+      </p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>🔑 Autenticação</h3>
+          <p>O que é e o que <strong>NÃO</strong> é um JWT (JSON Web Token)? Mitos comuns de mercado.</p>
+        </div>
+        <div class="card">
+          <h3>🎯 BFLA</h3>
+          <p>Broken Function Level Auth: Usuário comum agindo como Admin ou Vendedor.</p>
+        </div>
+        <div class="card">
+          <h3>💥 BOLA / IDOR</h3>
+          <p>Broken Object Level Auth: Alterando preços e produtos de lojas concorrentes.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: O Cenário Didático -->
+    <div class="slide">
+      <div class="slide-tag">// O CENÁRIO REAL</div>
+      <h2>Marketplace Multi-vendedor</h2>
+      <p class="subtitle">Várias lojas e clientes operando na mesma API. O que pode dar errado?</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>👤 Alice (Cliente)</h3>
+          <p><strong>Papel:</strong> CUSTOMER<br>
+          Deveria apenas navegar, adicionar ao carrinho e comprar produtos.</p>
+        </div>
+        <div class="card">
+          <h3>🏪 João & Maria (Lojas)</h3>
+          <p><strong>Papel:</strong> SELLER<br>
+          Cada um possui seus próprios produtos. Não deveriam tocar no catálogo do outro.</p>
+        </div>
+        <div class="card">
+          <h3>👑 Carlos (Admin)</h3>
+          <p><strong>Papel:</strong> ADMIN<br>
+          Acesso exclusivo a relatórios financeiros e governança da plataforma.</p>
+        </div>
+      </div>
+
+      <div class="card danger" style="margin-top: 20px;">
+        <h3>⚠️ A Grande Pergunta:</h3>
+        <p style="color: #fff; font-size: 1.05rem;">
+          Se um usuário tem um token JWT válido, a API pode confiar que ele pode fazer <strong>qualquer coisa</strong>?
+          <br><strong>Resposta curta: NUNCA!</strong> Autenticação ≠ Autorização.
+        </p>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Anatomia do JWT -->
+    <div class="slide">
+      <div class="slide-tag">// DESMISTIFICANDO O TOKEN</div>
+      <h2>Anatomia do JWT (JSON Web Token)</h2>
+      <p class="subtitle">JWT <strong>NÃO É CRIPTOGRAFIA</strong>! É apenas Base64URL assinado.</p>
+
+      <div class="jwt-box">
+        <span class="jwt-header">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="jwt-payload">eyJpZCI6MSwidXNlciI6ImFsaWNlIiwicm9sZSI6IkNVU1RPTUVSIn0</span>.<span class="jwt-signature">SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</span>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3 style="color: var(--danger);">🔴 Header (Vermelho)</h3>
+          <p>Metadados: tipo de token e algoritmo de assinatura (ex: HS256, RS256).</p>
+        </div>
+        <div class="card">
+          <h3 style="color: #ec4899;">🟣 Payload (Rosa)</h3>
+          <p>Claims (dados do usuário: id, role, exp). <strong>Legível por qualquer pessoa!</strong></p>
+        </div>
+        <div class="card">
+          <h3 style="color: var(--accent);">🔵 Assinatura (Azul)</h3>
+          <p>Garante integridade. Se a chave for fraca (ex: "secret123"), pode ser quebrada em segundos!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Falha 1 - BFLA -->
+    <div class="slide">
+      <div class="slide-tag">// VULNERABILIDADE 1 (OWASP API5:2023)</div>
+      <h2>BFLA: Broken Function Level Authorization</h2>
+      <p class="subtitle">A rota checa se você está logado, mas esquece de checar seu papel (Role).</p>
+
+      <div class="grid-2">
+        <div class="card danger">
+          <h3>❌ Código Vulnerável</h3>
+          <p>Apenas checa login. Cliente vira Admin!</p>
+          <pre>
+<span class="code-comment">// Rota de métricas da empresa</span>
+app.get(<span class="code-keyword">"/api/v1/admin/financials"</span>, 
+  authenticate, <span class="code-comment">// Só checou se tem token!</span>
+  (req, res) => {
+    <span class="code-vuln">res.json(db.getFinancialMetrics());</span>
+});</pre>
+        </div>
+
+        <div class="card success">
+          <h3>✅ Código Corrigido</h3>
+          <p>RBAC: Middleware exige papel explícito.</p>
+          <pre>
+<span class="code-comment">// Protegido por Role</span>
+app.get(<span class="code-keyword">"/api/v2/admin/financials"</span>, 
+  authenticate,
+  <span class="code-safe">requireRole("ADMIN")</span>, <span class="code-comment">// 403 se for CUSTOMER</span>
+  (req, res) => {
+    res.json(db.getFinancialMetrics());
+});</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Falha 2 - BOLA / IDOR -->
+    <div class="slide">
+      <div class="slide-tag">// VULNERABILIDADE 2 (OWASP API1:2023)</div>
+      <h2>BOLA: Broken Object Level Authorization</h2>
+      <p class="subtitle">O #1 da OWASP API Top 10! A Maria altera o preço do MacBook do João para R$ 1,00.</p>
+
+      <div class="grid-2">
+        <div class="card danger">
+          <h3>❌ Código Vulnerável</h3>
+          <p>Atualiza o ID da URL sem checar quem é o dono.</p>
+          <pre>
+app.put(<span class="code-keyword">"/api/v1/products/:id/price"</span>, (req, res) => {
+  <span class="code-comment">// Confia cegamente no ID do parâmetro!</span>
+  <span class="code-vuln">Product.update({ price: req.body.newPrice }, 
+    { where: { id: req.params.id } });</span>
+  res.json({ success: true });
+});</pre>
+        </div>
+
+        <div class="card success">
+          <h3>✅ Código Corrigido (Ownership Check)</h3>
+          <p>Validação estrita de propriedade do recurso.</p>
+          <pre>
+app.put(<span class="code-keyword">"/api/v2/products/:id/price"</span>, (req, res) => {
+  const product = Product.findById(req.params.id);
+  <span class="code-safe">if (product.sellerId !== req.user.id) {
+    return res.status(403).json({ error: "Acesso Negado" });
+  }</span>
+  product.updatePrice(req.body.newPrice);
+});</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: Live Hacking Demo -->
+    <div class="slide">
+      <div class="slide-tag">// HORA DO SHOW (AO VIVO)</div>
+      <h2>Demonstração Prática (Live Hacking)</h2>
+      <p class="subtitle">Executando as requisições na nossa API em Node.js.</p>
+
+      <div class="grid-3">
+        <div class="card danger">
+          <h3>1. Ataque BFLA</h3>
+          <p>Alice (`CUSTOMER`) acessa `/api/v1/admin/financials` e cria produto no catálogo da loja.</p>
+        </div>
+        <div class="card danger">
+          <h3>2. Ataque BOLA</h3>
+          <p>Maria (`SELLER #2`) derruba o preço do notebook do João (`SELLER #1`) via `PUT /api/v1/products/1/price`.</p>
+        </div>
+        <div class="card success">
+          <h3>3. A Defesa na V2</h3>
+          <p>Repetimos os mesmos ataques na rota `/api/v2` e vemos as defesas retornando <strong>403 Forbidden</strong>.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 20px; border-color: var(--accent);">
+        <p style="font-family: 'Fira Code', monospace; color: var(--accent);">
+          💻 Abra o arquivo <strong>test-requests/requests.http</strong> ou o Postman para acompanhar ao vivo!
+        </p>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Conclusão -->
+    <div class="slide">
+      <div class="slide-tag">// LIÇÕES PARA A CARREIRA</div>
+      <h2>3 Mandamentos da Segurança em APIs</h2>
+      <p class="subtitle">O que vocês, futuros desenvolvedores e arquitetos de software, devem levar hoje:</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>1. Token ≠ Permissão</h3>
+          <p>Saber <em>quem é o usuário</em> é só a metade da segurança. Saber <em>o que ele tem direito de acessar</em> é a outra metade.</p>
+        </div>
+        <div class="card">
+          <h3>2. Valide o Dono Sempre</h3>
+          <p>Nunca faça update ou delete baseado apenas no `ID` vindo na URL. Sempre amarre `WHERE id = ? AND owner_id = ?`.</p>
+        </div>
+        <div class="card">
+          <h3>3. Segredo JWT Forte</h3>
+          <p>Use chaves aleatórias de 256 bits geradas criptograficamente e valide o algoritmo no backend.</p>
+        </div>
+      </div>
+
+      <div style="margin-top: 30px; text-align: center;">
+        <h3 style="font-size: 1.5rem; color: var(--accent);">Obrigado! Perguntas & Respostas 🚀</h3>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer Navigation -->
+  <footer>
+    <div>
+      Controles: <span class="key-hint">←</span> <span class="key-hint">→</span> ou <span class="key-hint">Espaço</span> para navegar
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="prevSlide()">Anterior</button>
+      <button class="nav-btn" onclick="nextSlide()">Próximo</button>
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const currentSlideNum = document.getElementById('currentSlideNum');
+    const totalSlidesNum = document.getElementById('totalSlidesNum');
+    totalSlidesNum.innerText = slides.length;
+
+    function showSlide(index) {
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === index);
+      });
+      currentSlideNum.innerText = index + 1;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        currentSlide++;
+        showSlide(currentSlide);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        currentSlide--;
+        showSlide(currentSlide);
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+
+    // Cronômetro 20 min
+    let timerDuration = 20 * 60;
+    let timerInterval = null;
+    let isRunning = false;
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      return `⏱️ ${m}:${s}`;
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('startTimerBtn');
+      if (isRunning) {
+        clearInterval(timerInterval);
+        btn.innerText = "▶ Retomar";
+        isRunning = false;
+      } else {
+        btn.innerText = "⏸ Pausar";
+        isRunning = true;
+        timerInterval = setInterval(() => {
+          if (timerDuration > 0) {
+            timerDuration--;
+            document.getElementById('timerDisplay').innerText = formatTime(timerDuration);
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            btn.innerText = "Encerrado";
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      timerDuration = 20 * 60;
+      document.getElementById('timerDisplay').innerText = formatTime(timerDuration);
+      document.getElementById('startTimerBtn').innerText = "▶ Iniciar";
+    }
+  </script>
+</body>
+</html>

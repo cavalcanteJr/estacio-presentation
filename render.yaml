@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: estacio-presentation-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: JWT_WEAK_SECRET
+        value: secret123
+      - key: JWT_STRONG_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"

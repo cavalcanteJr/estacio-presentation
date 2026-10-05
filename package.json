@@ -1,0 +1,32 @@
+{
+  "name": "estacio-security-presentation-api",
+  "version": "1.0.0",
+  "description": "API de demonstração didática para palestra de segurança em REST APIs (JWT, BOLA, BFLA)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "backend": "node src/server.js",
+    "frontend": "npm run dev --prefix frontend",
+    "dev": "npm run backend & npm run frontend",
+    "db:seed": "node src/scripts/seed.js"
+  },
+  "keywords": [
+    "security",
+    "jwt",
+    "api-security",
+    "bola",
+    "bfla",
+    "owasp"
+  ],
+  "author": "Palestrante",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.23.1",
+    "ws": "^8.21.3"
+  }
+}
