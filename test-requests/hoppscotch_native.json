@@ -1,7 +1,7 @@
 [
   {
     "v": 1,
-    "name": "TechMarket - Lab de Seguranca REST APIs",
+    "name": "TechMarket - Todos os Endpoints do Sistema (100% Completo)",
     "folders": [],
     "requests": [
       {
@@ -98,7 +98,7 @@
       },
       {
         "v": "14",
-        "name": "1.1 Login Alice (Cliente Comum)",
+        "name": "1.1 Login Alice (Cliente)",
         "method": "POST",
         "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
         "params": [],
@@ -202,11 +202,17 @@
       },
       {
         "v": "14",
-        "name": "2.1 [BFLA] Listar Lojistas (Publico V1 vs 401 V2)",
-        "method": "GET",
-        "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers",
+        "name": "1.5 Cadastro Novo Usuario / Lojista",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/auth/register",
         "params": [],
-        "headers": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
         "preRequestScript": "",
         "testScript": "",
         "auth": {
@@ -214,17 +220,17 @@
           "authActive": true
         },
         "body": {
-          "contentType": null,
-          "body": null
+          "contentType": "application/json",
+          "body": "{\n  \"username\": \"novo_lojista\",\n  \"password\": \"123\",\n  \"name\": \"Loja Express\",\n  \"role\": \"SELLER\"\n}"
         },
         "requestVariables": [],
         "responses": {}
       },
       {
         "v": "14",
-        "name": "2.2 [BFLA] Alice acessa Faturamento Geral",
+        "name": "1.6 Meus Dados (Quem sou eu / Token decodificado)",
         "method": "GET",
-        "endpoint": "https://estacio-presentation.onrender.com/api/admin/financials",
+        "endpoint": "https://estacio-presentation.onrender.com/api/auth/me",
         "params": [],
         "headers": [
           {
@@ -248,7 +254,111 @@
       },
       {
         "v": "14",
-        "name": "3.1 [BOLA] Listar Catalogo de Produtos",
+        "name": "2.1 [BFLA] Listar Lojistas Cadastrados",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "2.2 [BFLA] Alice acessa Faturamento Geral da Empresa",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/admin/financials",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<TOKEN_ALICE>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "2.3 [BFLA] Aprovar Lojista Pendente",
+        "method": "PUT",
+        "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers/2/approve",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "2.4 [BFLA] Rejeitar Lojista Pendente",
+        "method": "PUT",
+        "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers/2/reject",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "3.1 Listar Todos os Produtos do Catalogo",
         "method": "GET",
         "endpoint": "https://estacio-presentation.onrender.com/api/products",
         "params": [],
@@ -268,14 +378,91 @@
       },
       {
         "v": "14",
-        "name": "3.2 [BOLA] Maria altera preco do MacBook de Joao para R$ 1,00",
+        "name": "3.2 Obter Detalhes de um Produto por ID",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/products/1",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "3.3 Listar Produtos do Lojista Logado",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/products/seller/me",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<TOKEN_LOJISTA>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "3.4 [BFLA] Alice cadastra Produto sem ser Lojista",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/products",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<TOKEN_ALICE>>",
+            "active": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"name\": \"PlayStation 5 Pro Hackeado\",\n  \"description\": \"Cadastrado explorando BFLA\",\n  \"price\": 3500,\n  \"category\": \"Consoles\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "3.5 [BOLA] Maria altera preco do MacBook de Joao para R$ 1,00",
         "method": "PUT",
         "endpoint": "https://estacio-presentation.onrender.com/api/products/1/price",
         "params": [],
         "headers": [
           {
             "key": "Authorization",
-            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "value": "Bearer <<TOKEN_MARIA>>",
             "active": true
           },
           {
@@ -299,14 +486,14 @@
       },
       {
         "v": "14",
-        "name": "4.1 [PRICE TAMPERING] Comprar MacBook enviando totalAmount R$ 1,00",
+        "name": "4.1 [PRICE TAMPERING] Checkout enviando totalAmount R$ 1,00",
         "method": "POST",
         "endpoint": "https://estacio-presentation.onrender.com/api/orders",
         "params": [],
         "headers": [
           {
             "key": "Authorization",
-            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "value": "Bearer <<TOKEN_ALICE>>",
             "active": true
           },
           {
@@ -323,16 +510,140 @@
         },
         "body": {
           "contentType": "application/json",
-          "body": "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"MacBook Pro\",\n      \"price\": 1,\n      \"quantity\": 1\n    }\n  ],\n  \"subtotal\": 1,\n  \"totalAmount\": 1,\n  \"shippingMethod\": \"SEDEX\",\n  \"shippingCost\": 0,\n  \"paymentMethod\": \"PIX\"\n}"
+          "body": "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"MacBook Pro\",\n      \"price\": 1,\n      \"quantity\": 1\n    }\n  ],\n  \"subtotal\": 1,\n  \"totalAmount\": 1,\n  \"shippingMethod\": \"SEDEX\",\n  \"shippingCost\": 0,\n  \"paymentMethod\": \"PIX\",\n  \"shippingAddress\": {\n    \"rua\": \"Av. Principal\",\n    \"numero\": \"100\",\n    \"cidade\": \"Recife\",\n    \"estado\": \"PE\"\n  }\n}"
         },
         "requestVariables": [],
         "responses": {}
       },
       {
         "v": "14",
-        "name": "5.1 Listar Relatorios de Bugs no Supabase",
+        "name": "4.2 [BOLA] Espionar Pedido de Outro Cliente por ID",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/orders/ORD-47430",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<TOKEN_ALICE>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "4.3 Listar Meus Pedidos (Historico do Cliente)",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/orders/my-orders",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<TOKEN_ALICE>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "4.4 Listar Pedidos dos Meus Produtos (Visao do Lojista)",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/orders/seller",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<TOKEN_JOAO>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "5.1 Listar Relatorios de Bugs Enviados pelos Participantes",
         "method": "GET",
         "endpoint": "https://estacio-presentation.onrender.com/api/reports",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "5.2 Submeter Novo Bug Report",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/reports",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"title\": \"Vazamento de Faturamento via BFLA\",\n  \"description\": \"Enviei GET para /api/admin/financials sem ser admin e vazou tudo.\",\n  \"author\": \"Aluno Testador\",\n  \"pageUrl\": \"/admin\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "5.3 Excluir Bug Report por ID",
+        "method": "DELETE",
+        "endpoint": "https://estacio-presentation.onrender.com/api/reports/1",
         "params": [],
         "headers": [],
         "preRequestScript": "",
