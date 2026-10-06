@@ -14,7 +14,8 @@ import {
   ShieldAlert,
   Lock,
   Package,
-  Sparkles
+  Sparkles,
+  Terminal
 } from "lucide-react";
 
 export default function Navbar() {
@@ -48,6 +49,14 @@ export default function Navbar() {
                 className="text-slate-300 hover:text-white transition-colors"
               >
                 Catálogo
+              </Link>
+
+              <Link
+                href="/hoppscotch"
+                className="flex items-center gap-1.5 text-sky-400 hover:text-sky-300 font-semibold transition-colors"
+              >
+                <Terminal className="w-4 h-4" />
+                <span>Instruções API</span>
               </Link>
 
               {user && (
