@@ -1,0 +1,287 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "TechMarket - Lab de Segurança em REST APIs (Estácio)",
+    "description": "Especificação interativa para a palestra de segurança de APIs: Demonstração prática de JWT, Broken Object Level Authorization (BOLA), Broken Function Level Authorization (BFLA) e Price Tampering.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://estacio-presentation.onrender.com",
+      "description": "Ambiente de Produção (Render)"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Ambiente Local"
+    }
+  ],
+  "tags": [
+    { "name": "0. Controle do Lab", "description": "Consulta e alteração do rigor da API (V1 vs V2) e reset do banco" },
+    { "name": "1. Autenticação & Cadastro", "description": "Endpoints de login e registro de clientes e lojistas" },
+    { "name": "2. Demonstração BFLA", "description": "Broken Function Level Authorization (Vazamento de dados administrativos)" },
+    { "name": "3. Demonstração BOLA", "description": "Broken Object Level Authorization (Guerra de preços entre lojistas rivais)" },
+    { "name": "4. Pedidos & Price Tampering", "description": "Adulteração de preços e violação de propriedade de pedidos" },
+    { "name": "5. Relatórios de Bugs", "description": "Submissão de vulnerabilidades descobertas pelos participantes" }
+  ],
+  "paths": {
+    "/api/system/mode": {
+      "get": {
+        "tags": ["0. Controle do Lab"],
+        "summary": "Consultar Modo Atual do Sistema (V1 ou V2)",
+        "responses": {
+          "200": { "description": "Retorna o modo ativo gravado no Supabase" }
+        }
+      },
+      "post": {
+        "tags": ["0. Controle do Lab"],
+        "summary": "Alternar Modo Global (v1 vulnerável ou v2 blindado)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": { "type": "string", "enum": ["v1", "v2"], "example": "v2" }
+                },
+                "required": ["mode"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Modo atualizado com sucesso" }
+        }
+      }
+    },
+    "/api/reset": {
+      "post": {
+        "tags": ["0. Controle do Lab"],
+        "summary": "Restaurar Banco de Dados do Supabase para o estado original",
+        "responses": {
+          "200": { "description": "Banco resetado com sucesso" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["1. Autenticação & Cadastro"],
+        "summary": "Login de Usuário (Cliente, Lojista ou Admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string", "example": "alice" },
+                  "password": { "type": "string", "example": "123" }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token JWT retornado com sucesso" },
+          "401": { "description": "Credenciais inválidas" }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["1. Autenticação & Cadastro"],
+        "summary": "Cadastro de Novo Usuário / Lojista",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string", "example": "novo_lojista" },
+                  "password": { "type": "string", "example": "123" },
+                  "name": { "type": "string", "example": "Loja Express" },
+                  "role": { "type": "string", "enum": ["CUSTOMER", "SELLER"], "example": "SELLER" }
+                },
+                "required": ["username", "password", "name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado com sucesso" }
+        }
+      }
+    },
+    "/api/admin/sellers": {
+      "get": {
+        "tags": ["2. Demonstração BFLA"],
+        "summary": "[BFLA] Listar Lojistas (Público na V1 vs 401 na V2)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de lojistas retornada" },
+          "401": { "description": "Bloqueado na V2 se não enviar token de Admin" }
+        }
+      }
+    },
+    "/api/admin/financials": {
+      "get": {
+        "tags": ["2. Demonstração BFLA"],
+        "summary": "[BFLA] Alice acessa Faturamento Geral da Plataforma",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Faturamento exposto na V1" },
+          "403": { "description": "Acesso negado na V2 para não administradores" }
+        }
+      }
+    },
+    "/api/admin/sellers/{id}/approve": {
+      "put": {
+        "tags": ["2. Demonstração BFLA"],
+        "summary": "[BFLA] Aprovar Lojista Pendente",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 2 }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lojista aprovado" },
+          "403": { "description": "Bloqueado na V2" }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "tags": ["3. Demonstração BOLA"],
+        "summary": "Listar Catálogo de Produtos",
+        "responses": {
+          "200": { "description": "Lista de produtos" }
+        }
+      }
+    },
+    "/api/products/{id}/price": {
+      "put": {
+        "tags": ["3. Demonstração BOLA"],
+        "summary": "[BOLA] Alterar Preço de Produto (Rival Maria altera MacBook de João)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" }, "example": 1 }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "newPrice": { "type": "number", "example": 1.00 }
+                },
+                "required": ["newPrice"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Preço alterado com sucesso (V1 vulnerável ou dono na V2)" },
+          "403": { "description": "Bloqueado na V2: Você não é dono deste produto" }
+        }
+      }
+    },
+    "/api/orders": {
+      "post": {
+        "tags": ["4. Pedidos & Price Tampering"],
+        "summary": "[PRICE TAMPERING] Criar Pedido com Preço Adulterado",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer", "example": 1 },
+                        "name": { "type": "string", "example": "MacBook Pro" },
+                        "price": { "type": "number", "example": 1.00 },
+                        "quantity": { "type": "integer", "example": 1 }
+                      }
+                    }
+                  },
+                  "subtotal": { "type": "number", "example": 1.00 },
+                  "totalAmount": { "type": "number", "example": 1.00 },
+                  "shippingMethod": { "type": "string", "example": "SEDEX" },
+                  "shippingCost": { "type": "number", "example": 0 },
+                  "paymentMethod": { "type": "string", "example": "PIX" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Pedido aceito na V1 com preço falso de R$ 1,00" },
+          "400": { "description": "Rejeitado na V2: Preço adulterado detectado pelo servidor" }
+        }
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "tags": ["4. Pedidos & Price Tampering"],
+        "summary": "[BOLA] Espionar Pedido de Outro Usuário pelo ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "example": "ORD-47430" }
+        ],
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Dados do pedido vazados na V1" },
+          "403": { "description": "Bloqueado na V2 se o pedido não pertencer ao usuário logado" }
+        }
+      }
+    },
+    "/api/reports": {
+      "get": {
+        "tags": ["5. Relatórios de Bugs"],
+        "summary": "Listar Todos os Bugs Reportados pelos Participantes",
+        "responses": {
+          "200": { "description": "Lista de reports" }
+        }
+      },
+      "post": {
+        "tags": ["5. Relatórios de Bugs"],
+        "summary": "Reportar Nova Vulnerabilidade / Bug",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string", "example": "Consegui alterar preço de outro vendedor" },
+                  "description": { "type": "string", "example": "Enviei um PUT para /api/products/1/price sem ser o dono." },
+                  "author": { "type": "string", "example": "Lucas (Estácio)" },
+                  "pageUrl": { "type": "string", "example": "/products/1" }
+                },
+                "required": ["title"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Bug registrado com sucesso no Supabase" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
