@@ -1,0 +1,353 @@
+[
+  {
+    "v": 1,
+    "name": "TechMarket - Lab de Seguranca REST APIs",
+    "folders": [],
+    "requests": [
+      {
+        "v": "14",
+        "name": "0.1 Consultar Modo Atual (V1 ou V2)",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/system/mode",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "0.2 Mudar Modo para V1 (Vulneravel)",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/system/mode",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"mode\": \"v1\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "0.3 Mudar Modo para V2 (Blindado OWASP)",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/system/mode",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"mode\": \"v2\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "0.4 Resetar Banco de Dados no Supabase",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/reset",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "1.1 Login Alice (Cliente Comum)",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"username\": \"alice\",\n  \"password\": \"123\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "1.2 Login Joao (Lojista 1)",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"username\": \"joao\",\n  \"password\": \"123\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "1.3 Login Maria (Lojista 2)",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"username\": \"maria\",\n  \"password\": \"123\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "1.4 Login Admin Geral",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+        "params": [],
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "2.1 [BFLA] Listar Lojistas (Publico V1 vs 401 V2)",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "2.2 [BFLA] Alice acessa Faturamento Geral",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/admin/financials",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "3.1 [BOLA] Listar Catalogo de Produtos",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/products",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "3.2 [BOLA] Maria altera preco do MacBook de Joao para R$ 1,00",
+        "method": "PUT",
+        "endpoint": "https://estacio-presentation.onrender.com/api/products/1/price",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "active": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"newPrice\": 1\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "4.1 [PRICE TAMPERING] Comprar MacBook enviando totalAmount R$ 1,00",
+        "method": "POST",
+        "endpoint": "https://estacio-presentation.onrender.com/api/orders",
+        "params": [],
+        "headers": [
+          {
+            "key": "Authorization",
+            "value": "Bearer <<SEU_TOKEN_AQUI>>",
+            "active": true
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "active": true
+          }
+        ],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": "application/json",
+          "body": "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"MacBook Pro\",\n      \"price\": 1,\n      \"quantity\": 1\n    }\n  ],\n  \"subtotal\": 1,\n  \"totalAmount\": 1,\n  \"shippingMethod\": \"SEDEX\",\n  \"shippingCost\": 0,\n  \"paymentMethod\": \"PIX\"\n}"
+        },
+        "requestVariables": [],
+        "responses": {}
+      },
+      {
+        "v": "14",
+        "name": "5.1 Listar Relatorios de Bugs no Supabase",
+        "method": "GET",
+        "endpoint": "https://estacio-presentation.onrender.com/api/reports",
+        "params": [],
+        "headers": [],
+        "preRequestScript": "",
+        "testScript": "",
+        "auth": {
+          "authType": "inherit",
+          "authActive": true
+        },
+        "body": {
+          "contentType": null,
+          "body": null
+        },
+        "requestVariables": [],
+        "responses": {}
+      }
+    ]
+  }
+]
