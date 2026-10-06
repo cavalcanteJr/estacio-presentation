@@ -4,6 +4,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import Navbar from "@/components/Navbar";
 import CartDrawer from "@/components/CartDrawer";
+import BugReportModal from "@/components/BugReportModal";
 
 export const metadata: Metadata = {
   title: "TechMarket | E-commerce Oficial de Tecnologia",
@@ -22,6 +23,7 @@ export default function RootLayout({
           <CartProvider>
             <Navbar />
             <CartDrawer />
+            <BugReportModal />
             <div className="flex-1">
               {children}
             </div>

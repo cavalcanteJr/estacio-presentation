@@ -60,8 +60,8 @@ const corsOptions = {
 
 app.set("etag", false);
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Injeta o modo atual da API no cabeçalho X-System-Mode de todas as respostas
 app.use(async (req, res, next) => {
@@ -139,9 +139,12 @@ app.post("/api/reset", async (req, res) => {
   }
 });
 
+const reportsRoutes = require("./routes/reports.routes");
+
 // Rotas Base
 app.use("/api/auth", authRoutes);
 app.use("/api/system", systemRoutes);
+app.use("/api/reports", reportsRoutes);
 
 // Rotas Dinâmicas (seguem o toggle mestre em system_config.api_mode no Supabase)
 app.use("/api/products", dynamicProducts);

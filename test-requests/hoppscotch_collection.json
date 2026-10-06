@@ -1,0 +1,202 @@
+{
+  "v": 1,
+  "name": "TechMarket - Lab de Segurança REST APIs (Estácio)",
+  "folders": [
+    {
+      "v": 1,
+      "name": "0. Controle do Lab & Reset",
+      "requests": [
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/system/mode",
+          "name": "Consultar Modo Atual (V1 ou V2)",
+          "method": "GET",
+          "headers": []
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/system/mode",
+          "name": "Mudar Modo para V1 (Vulnerável)",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"mode\": \"v1\"\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/system/mode",
+          "name": "Mudar Modo para V2 (Blindado OWASP)",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"mode\": \"v2\"\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/reset",
+          "name": "Restaurar Base de Dados no Supabase",
+          "method": "POST",
+          "headers": []
+        }
+      ]
+    },
+    {
+      "v": 1,
+      "name": "1. Autenticação & Cadastro",
+      "requests": [
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+          "name": "Login Alice (Cliente Comum)",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"username\": \"alice\",\n  \"password\": \"123\"\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+          "name": "Login João (Lojista 1)",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"username\": \"joao\",\n  \"password\": \"123\"\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+          "name": "Login Maria (Lojista 2)",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"username\": \"maria\",\n  \"password\": \"123\"\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/auth/login",
+          "name": "Login Admin Geral",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/auth/register",
+          "name": "Cadastrar Novo Lojista (Status PENDING)",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": { "contentType": "application/json", "body": "{\n  \"username\": \"novo_lojista\",\n  \"password\": \"123\",\n  \"name\": \"Loja Express\",\n  \"role\": \"SELLER\"\n}" }
+        }
+      ]
+    },
+    {
+      "v": 1,
+      "name": "2. Demonstração BFLA (Quebra de Função)",
+      "requests": [
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers",
+          "name": "[BFLA] Listar Lojistas (Público na V1 vs 401 na V2)",
+          "method": "GET",
+          "headers": []
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/admin/financials",
+          "name": "[BFLA] Alice acessa Faturamento da Empresa (Público V1)",
+          "method": "GET",
+          "headers": [{ "key": "Authorization", "value": "Bearer <TOKEN_ALICE>", "active": true }]
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/admin/sellers/1/approve",
+          "name": "[BFLA] Alice aprova lojista sem ser Admin",
+          "method": "PUT",
+          "headers": [{ "key": "Authorization", "value": "Bearer <TOKEN_ALICE>", "active": true }]
+        }
+      ]
+    },
+    {
+      "v": 1,
+      "name": "3. Demonstração BOLA (Guerra de Preços)",
+      "requests": [
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/products",
+          "name": "Listar Catálogo de Produtos",
+          "method": "GET",
+          "headers": []
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/products/1/price",
+          "name": "[BOLA] Maria altera preço do MacBook de João para R$ 1,00",
+          "method": "PUT",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <TOKEN_MARIA>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "body": { "contentType": "application/json", "body": "{\n  \"newPrice\": 1.00\n}" }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/products/1/price",
+          "name": "[DEFESA V2] Maria tenta alterar preço alheio (Toma 403)",
+          "method": "PUT",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <TOKEN_MARIA>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "body": { "contentType": "application/json", "body": "{\n  \"newPrice\": 0.99\n}" }
+        }
+      ]
+    },
+    {
+      "v": 1,
+      "name": "4. Demonstração Price Tampering & BOLA em Pedidos",
+      "requests": [
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/orders",
+          "name": "[PRICE TAMPERING] Comprar MacBook enviando totalAmount forjado de R$ 1,00",
+          "method": "POST",
+          "headers": [
+            { "key": "Authorization", "value": "Bearer <TOKEN_ALICE>", "active": true },
+            { "key": "Content-Type", "value": "application/json", "active": true }
+          ],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"items\": [{ \"id\": 1, \"name\": \"MacBook Pro\", \"price\": 1.00, \"quantity\": 1 }],\n  \"subtotal\": 1.00,\n  \"totalAmount\": 1.00,\n  \"shippingMethod\": \"SEDEX\",\n  \"shippingCost\": 0,\n  \"paymentMethod\": \"PIX\"\n}"
+          }
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/orders/ORD-00001",
+          "name": "[BOLA] Espionar Pedido de Outro Cliente sem Autorização",
+          "method": "GET",
+          "headers": [{ "key": "Authorization", "value": "Bearer <TOKEN_ALICE>", "active": true }]
+        }
+      ]
+    },
+    {
+      "v": 1,
+      "name": "5. Bug Reports dos Participantes",
+      "requests": [
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/reports",
+          "name": "Listar Bugs Reportados pelos Alunos",
+          "method": "GET",
+          "headers": []
+        },
+        {
+          "v": "1",
+          "endpoint": "https://estacio-presentation.onrender.com/api/reports",
+          "name": "Criar Novo Bug Report",
+          "method": "POST",
+          "headers": [{ "key": "Content-Type", "value": "application/json", "active": true }],
+          "body": {
+            "contentType": "application/json",
+            "body": "{\n  \"title\": \"Vazamento de Faturamento via BFLA\",\n  \"description\": \"Consegui ver o faturamento total da empresa sem ser admin.\",\n  \"author\": \"Aluno Testador\",\n  \"pageUrl\": \"/admin\"\n}"
+          }
+        }
+      ]
+    }
+  ],
+  "requests": []
+}

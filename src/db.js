@@ -663,6 +663,74 @@ class Database {
       ]
     };
   }
+
+  // --- Relatórios de Bugs dos Alunos / Testadores ---
+  async getBugReports() {
+    const { data, error } = await supabase
+      .from("system_config")
+      .select("value")
+      .eq("key", "bug_reports_list")
+      .maybeSingle();
+
+    if (error) {
+      console.warn("Aviso ao buscar bug_reports_list:", error.message);
+      return [];
+    }
+    if (!data || !data.value) return [];
+    try {
+      const parsed = JSON.parse(data.value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async createBugReport({ title, description, imageData, author, pageUrl, systemMode }) {
+    const currentReports = await this.getBugReports();
+    const newReport = {
+      id: Date.now(),
+      title: title || "Bug sem título",
+      description: description || "",
+      imageData: imageData || null,
+      author: author || "Aluno Anônimo",
+      pageUrl: pageUrl || "/",
+      systemMode: systemMode || "v1",
+      createdAt: new Date().toISOString()
+    };
+
+    // Mantém os 50 mais recentes para gerenciar o tamanho
+    const updated = [newReport, ...currentReports].slice(0, 50);
+
+    const { error } = await supabase
+      .from("system_config")
+      .upsert(
+        { key: "bug_reports_list", value: JSON.stringify(updated) },
+        { onConflict: "key" }
+      );
+
+    if (error) {
+      throw new Error(`[Supabase] Erro ao salvar bug report: ${error.message}`);
+    }
+
+    return newReport;
+  }
+
+  async deleteBugReport(id) {
+    const currentReports = await this.getBugReports();
+    const updated = currentReports.filter((r) => String(r.id) !== String(id));
+
+    const { error } = await supabase
+      .from("system_config")
+      .upsert(
+        { key: "bug_reports_list", value: JSON.stringify(updated) },
+        { onConflict: "key" }
+      );
+
+    if (error) {
+      throw new Error(`[Supabase] Erro ao excluir bug report: ${error.message}`);
+    }
+    return true;
+  }
 }
 
 const db = new Database();
