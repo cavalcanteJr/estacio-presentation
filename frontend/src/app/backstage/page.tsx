@@ -27,12 +27,13 @@ export default function BackstagePage() {
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [loadingSellers, setLoadingSellers] = useState(false);
   const [loadingToggle, setLoadingToggle] = useState(false);
+  const [autoSync, setAutoSync] = useState(false);
 
   const isV2 = systemMode === "v2";
 
-  const fetchSellers = async () => {
+  const fetchSellers = async (isBackground = false) => {
     try {
-      setLoadingSellers(true);
+      if (!isBackground) setLoadingSellers(true);
       const res = await fetch(`${API_BASE}/api/admin/sellers`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
@@ -43,13 +44,22 @@ export default function BackstagePage() {
     } catch (e) {
       console.warn("Erro ao buscar vendedores no backstage:", e);
     } finally {
-      setLoadingSellers(false);
+      if (!isBackground) setLoadingSellers(false);
     }
   };
 
   useEffect(() => {
     fetchSellers();
   }, [token, systemMode]);
+
+  // Auto-sync a cada 1 segundo quando ativado
+  useEffect(() => {
+    if (!autoSync) return;
+    const interval = setInterval(() => {
+      fetchSellers(true);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [autoSync, token]);
 
   const handleToggle = async () => {
     setLoadingToggle(true);
@@ -193,13 +203,47 @@ export default function BackstagePage() {
                 Aprove qualquer vendedor pendente diretamente aqui para permitir que ele entre na plataforma.
               </p>
             </div>
-            <button
-              onClick={fetchSellers}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-              title="Recarregar tabela"
-            >
-              <RefreshCw className={`w-4 h-4 ${loadingSellers ? "animate-spin" : ""}`} />
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Toggle Auto Sync 1s */}
+              <label className="flex items-center gap-2 cursor-pointer bg-slate-950/60 border border-slate-800 hover:border-slate-700 px-3 py-1.5 rounded-xl transition-all select-none">
+                <input
+                  type="checkbox"
+                  checked={autoSync}
+                  onChange={(e) => setAutoSync(e.target.checked)}
+                  className="sr-only"
+                />
+                <div
+                  className={`w-8 h-4 rounded-full transition-colors relative ${
+                    autoSync ? "bg-indigo-500" : "bg-slate-700"
+                  }`}
+                >
+                  <div
+                    className={`w-3 h-3 rounded-full bg-white transition-transform absolute top-0.5 left-0.5 ${
+                      autoSync ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-medium">
+                  <span className={autoSync ? "text-indigo-300 font-semibold" : "text-slate-400"}>
+                    Auto Sync (1s)
+                  </span>
+                  {autoSync && (
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                  )}
+                </div>
+              </label>
+
+              <button
+                onClick={() => fetchSellers(false)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                title="Recarregar tabela manualmente"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingSellers ? "animate-spin" : ""}`} />
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
