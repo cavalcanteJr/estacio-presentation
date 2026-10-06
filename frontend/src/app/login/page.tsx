@@ -107,13 +107,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Dica para o palestrante lembrar as credenciais na hora */}
-        <div className="mt-6 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
-          <span className="font-semibold text-slate-300 block">💡 Contas Pré-cadastradas:</span>
-          <div>• <strong>alice</strong> (Cliente) &bull; Senha: <code className="text-sky-400">123</code></div>
-          <div>• <strong>joao</strong> / <strong>maria</strong> (Lojistas) &bull; Senha: <code className="text-sky-400">123</code></div>
-          <div>• <strong>admin</strong> (Administrador) &bull; Senha: <code className="text-sky-400">admin123</code></div>
-        </div>
+
 
       </div>
     </div>
