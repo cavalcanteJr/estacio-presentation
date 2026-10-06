@@ -146,9 +146,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(false);
 
-    // Polling sutil a cada 4s para manter modo sincronizado
-    const interval = setInterval(fetchSystemMode, 4000);
-    return () => clearInterval(interval);
+    // Atualiza o modo do sistema apenas quando a janela ganha foco (sem polling infinito)
+    const handleFocus = () => fetchSystemMode();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   return (
