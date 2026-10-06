@@ -54,6 +54,7 @@ const corsOptions = {
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  exposedHeaders: ["X-System-Mode"],
   optionsSuccessStatus: 204
 };
 
@@ -61,6 +62,17 @@ app.set("etag", false);
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
+
+// Injeta o modo atual da API no cabeçalho X-System-Mode de todas as respostas
+app.use(async (req, res, next) => {
+  try {
+    const currentMode = await db.getSystemMode();
+    res.setHeader("X-System-Mode", currentMode);
+  } catch {
+    // se falhar temporariamente, segue o fluxo
+  }
+  next();
+});
 
 // Desativa cache para garantir respostas dinâmicas em tempo real (evita 304 Not Modified)
 app.use((req, res, next) => {

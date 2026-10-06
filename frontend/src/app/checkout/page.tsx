@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { API_BASE } from "@/config/api";
+import { API_BASE, apiFetch } from "@/config/api";
 import {
   ShieldCheck,
   CreditCard,
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
               }
       };
 
-      const res = await fetch(`${API_BASE}/api/orders`, {
+      const res = await apiFetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -23,7 +23,13 @@ export interface AuthContextType {
   resetDatabase: () => Promise<void>;
 }
 
-import { API_BASE } from "@/config/api";
+import {
+  API_BASE,
+  getStoredSystemMode,
+  getStoredSystemStorage,
+  setStoredSystemMode,
+  SystemMode
+} from "@/config/api";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -32,14 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [systemMode, setSystemModeState] = useState<"v1" | "v2">("v1");
-  const [systemStorage, setSystemStorage] = useState<string>("In-Memory Fallback");
+  const [systemStorage, setSystemStorage] = useState<string>("Supabase (PostgreSQL)");
 
   const fetchSystemMode = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/system/mode`);
+      const res = await fetch(`${API_BASE}/api/system/mode`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        setSystemModeState(data.mode);
+        const mode: SystemMode = data.mode === "v2" ? "v2" : "v1";
+        setStoredSystemMode(mode, data.storage);
+        setSystemModeState(mode);
         setSystemStorage(data.storage);
       }
     } catch (e) {
@@ -57,7 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       if (res.ok) {
         const data = await res.json();
-        setSystemModeState(data.mode);
+        const mode: SystemMode = data.mode === "v2" ? "v2" : "v1";
+        setStoredSystemMode(mode, data.storage);
+        setSystemModeState(mode);
       }
     } catch (e) {
       console.error("Erro ao alterar modo:", e);
@@ -129,6 +139,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Carrega modo pré-salvo no storage imediatamente (sem esperar resposta de rede)
+    setSystemModeState(getStoredSystemMode());
+    setSystemStorage(getStoredSystemStorage());
+
+    // Valida com o backend ao abrir a página
     fetchSystemMode();
 
     // Carregar sessão salva no localStorage
@@ -146,10 +161,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(false);
 
-    // Atualiza o modo do sistema apenas quando a janela ganha foco (sem polling infinito)
+    // Ouve alterações de modo disparadas por pré-validações de requisições ou outras abas
+    const handleModeChanged = (e: any) => {
+      if (e.detail?.mode) {
+        setSystemModeState(e.detail.mode);
+        if (e.detail.storage) setSystemStorage(e.detail.storage);
+      }
+    };
+
     const handleFocus = () => fetchSystemMode();
     window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
+    window.addEventListener("system-mode-changed", handleModeChanged);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("system-mode-changed", handleModeChanged);
+    };
   }, []);
 
   return (

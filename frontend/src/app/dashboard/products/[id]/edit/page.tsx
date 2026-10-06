@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { API_BASE } from "@/config/api";
+import { API_BASE, apiFetch } from "@/config/api";
 import { ArrowLeft, Save, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface Product {
@@ -77,7 +77,7 @@ export default function EditProductPage() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/products/${productId}/price`, {
+      const res = await apiFetch(`${API_BASE}/api/products/${productId}/price`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
